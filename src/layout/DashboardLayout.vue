@@ -9,7 +9,9 @@
     <Sidebar :open="isSidebarOpen" @close-sidebar="() => (isSidebarOpen = false)" />
 
     <div id="dashboard-content" class="flex min-h-0 flex-1 flex-col">
-      <header class="flex h-12 items-center justify-between px-4 drop-shadow-sm bg-white">
+      <header
+        class="flex h-12 items-center justify-between px-4 drop-shadow-sm bg-white dark:bg-slate-900"
+      >
         <div class="flex items-center gap-2">
           <Button variant="link" @click="toggleSidebar">
             <Bars3Icon class="size-6" />
@@ -21,9 +23,7 @@
         </div>
       </header>
 
-      <section
-        class="flex min-h-0 flex-1 overflow-y-auto bg-slate-100 p-4 dark:bg-slate-700 dark:text-slate-50"
-      >
+      <section>
         <RouterView />
       </section>
     </div>

@@ -54,7 +54,7 @@ export function extractRefreshToken(data: unknown) {
   )
 }
 
-export function extractUser(data: unknown): Record<string, unknown> | null {
+export function extractUser(data: unknown): AuthUser {
   if (!data || typeof data !== 'object') {
     return null
   }
@@ -65,7 +65,7 @@ export function extractUser(data: unknown): Record<string, unknown> | null {
   }
 
   if (payload.user && typeof payload.user === 'object' && !Array.isArray(payload.user)) {
-    return payload.user as Record<string, unknown>
+    return payload.user as AuthUser
   }
 
   if (
@@ -73,7 +73,7 @@ export function extractUser(data: unknown): Record<string, unknown> | null {
     typeof payload.data.user === 'object' &&
     !Array.isArray(payload.data.user)
   ) {
-    return payload.data.user as Record<string, unknown>
+    return payload.data.user as AuthUser
   }
 
   return null
