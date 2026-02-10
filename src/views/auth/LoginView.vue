@@ -50,9 +50,6 @@ const email = ref('')
 const password = ref('')
 const errors = ref<{ email?: string; password?: string }>({})
 
-const router = useRouter()
-const route = useRoute()
-
 const handleLogin = () => {
   errors.value = {}
 
