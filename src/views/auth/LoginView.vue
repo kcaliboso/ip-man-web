@@ -24,7 +24,10 @@
         required
       />
 
-      <Button type="submit"> Login </Button>
+      <Button type="submit">
+        <p v-if="isSubmitting">Logging In...</p>
+        <p v-else>Login</p>
+      </Button>
     </form>
 
     <div class="mt-6 gap-2 flex flex-col items-center justify-between text-sm">
@@ -35,11 +38,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 import Input from '@/components/ui/Input.vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
 import { z } from 'zod'
+import api from '@/lib/axios'
+import { useAuthStore } from '@/stores/auth'
+import { toast } from 'vue-sonner'
+import { extractToken, getServerErrorMessage } from '@/lib/auth'
 
 const loginSchema = z.object({
   email: z.email({ error: 'Please enter a valid email.' }),
@@ -50,8 +57,14 @@ const email = ref('')
 const password = ref('')
 const errors = ref<{ email?: string; password?: string }>({})
 
-const handleLogin = () => {
+const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
+const isSubmitting = ref(false)
+
+async function handleLogin() {
   errors.value = {}
+  isSubmitting.value = true
 
   const result = loginSchema.safeParse({
     email: email.value,
@@ -67,6 +80,36 @@ const handleLogin = () => {
     return
   }
 
-  console.log(result)
+  try {
+    const response = await api.post('/auth/login', {
+      email: result.data.email,
+      password: result.data.password,
+    })
+
+    console.log(response)
+
+    const token = extractToken(response.data)
+
+    if (!token) {
+      toast.warning('Token is not available.')
+      return
+    }
+
+    authStore.setToken(token)
+
+    if (!authStore.isTokenValid) {
+      authStore.clearToken()
+      toast.error('Invalid or expired token.')
+      return
+    }
+
+    const redirectTarget =
+      typeof route.query.redirect === 'string' ? route.query.redirect : '/dashboard'
+    router.push(redirectTarget)
+  } catch (error) {
+    toast.error(getServerErrorMessage(error))
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>

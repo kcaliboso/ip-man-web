@@ -1,4 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { pinia } from '@/stores'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -9,6 +11,10 @@ const router = createRouter({
       children: [
         {
           path: '',
+          redirect: { name: 'home' },
+        },
+        {
+          path: 'home',
           name: 'home',
           component: () => import('../views/HomeView.vue'),
         },
@@ -46,15 +52,19 @@ const router = createRouter({
     },
     {
       path: '/:pathMatch(.*)*',
-      redirect: '/',
+      redirect: '/home',
     },
   ],
 })
 
-const isAuthenticated = () => Boolean(localStorage.getItem('auth_token'))
-
 router.beforeEach((to) => {
-  const loggedIn = isAuthenticated()
+  const authStore = useAuthStore(pinia)
+
+  if (authStore.token && !authStore.isTokenValid) {
+    authStore.clearToken()
+  }
+
+  const loggedIn = authStore.isAuthenticated
 
   if (to.meta.requiresAuth && !loggedIn) {
     return { name: 'login', query: { redirect: to.fullPath } }
