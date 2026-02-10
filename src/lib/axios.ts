@@ -1,5 +1,5 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios'
-import { extractRefreshToken, extractToken, extractUser } from '@/lib/auth'
+import { extractRefreshToken, extractToken, extractUser } from '@/lib/authHelpers'
 import { useAuthStore } from '@/stores/auth'
 import { pinia } from '@/stores'
 

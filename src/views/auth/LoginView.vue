@@ -46,7 +46,12 @@ import { z } from 'zod'
 import api from '@/lib/axios'
 import { useAuthStore } from '@/stores/auth'
 import { toast } from 'vue-sonner'
-import { extractRefreshToken, extractToken, extractUser, getServerErrorMessage } from '@/lib/auth'
+import {
+  extractRefreshToken,
+  extractToken,
+  extractUser,
+  getServerErrorMessage,
+} from '@/lib/authHelpers'
 
 const loginSchema = z.object({
   email: z.email({ error: 'Please enter a valid email.' }),

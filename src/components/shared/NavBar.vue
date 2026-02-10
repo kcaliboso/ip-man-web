@@ -15,7 +15,6 @@
 <script setup lang="ts">
 import ThemeModeSwitcher from './ThemeModeSwitcher.vue'
 import Link from '../ui/Link.vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
