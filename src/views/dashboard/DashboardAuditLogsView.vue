@@ -14,34 +14,16 @@
       <div v-else-if="!auditLogs.length" class="p-4 text-sm text-slate-500 dark:text-slate-300">
         No audit logs found.
       </div>
-      <div v-else class="h-full overflow-auto">
-        <table class="min-w-full border-collapse text-sm">
-          <thead class="sticky top-0 bg-slate-100 text-left dark:bg-slate-800">
-            <tr>
-              <th class="px-4 py-3 font-semibold">Date</th>
-              <th class="px-4 py-3 font-semibold">Event</th>
-              <th class="px-4 py-3 font-semibold">User</th>
-              <th class="px-4 py-3 font-semibold">IP</th>
-              <th class="px-4 py-3 font-semibold">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="log in auditLogs"
-              :key="String(log.id)"
-              class="border-t border-slate-200 dark:border-slate-800"
-            >
-              <td class="px-4 py-3 whitespace-nowrap">
-                {{ formatDate(log.createdAt) }}
-              </td>
-              <td class="px-4 py-3">{{ log.event ?? '-' }}</td>
-              <td class="px-4 py-3">{{ log.user?.name ?? '-' }}</td>
-              <td class="px-4 py-3">{{ log.ipAddress ?? '-' }}</td>
-              <td class="px-4 py-3">{{ log.message ?? '-' }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        v-else
+        :data="auditLogs"
+        :columns="columns"
+        :manual-pagination="true"
+        :page-index="currentPage - 1"
+        :page-size="perPage"
+        :page-count="lastPage"
+        @pagination-change="handlePaginationChange"
+      />
     </div>
   </DashboardSection>
 </template>
@@ -49,13 +31,48 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { AxiosError } from 'axios'
+import type { ColumnDef, PaginationState } from '@tanstack/vue-table'
 import DashboardSection from '@/components/sections/DashboardSection.vue'
+import DataTable from '@/components/ui/DataTable.vue'
 import api from '@/lib/axios'
 import type { AuditLog } from '@/types/AuditLog'
+import type { PaginatedResponse } from '@/types/Response/PaginatedResponse'
 
 const auditLogs = ref<AuditLog[]>([])
 const isLoading = ref(true)
 const errorMessage = ref('')
+const currentPage = ref(1)
+const perPage = ref(10)
+const lastPage = ref(1)
+
+const columns: ColumnDef<AuditLog>[] = [
+  {
+    accessorKey: 'createdAt',
+    header: 'Date',
+    cell: (info) => formatDate(info.getValue() as string | undefined),
+  },
+  {
+    accessorKey: 'event',
+    header: 'Event',
+    cell: (info) => (info.getValue() as string | undefined) ?? '-',
+  },
+  {
+    id: 'user',
+    header: 'User',
+    accessorFn: (row) => row.user?.name ?? '-',
+    cell: (info) => (info.getValue() as string | undefined) ?? '-',
+  },
+  {
+    accessorKey: 'ipAddress',
+    header: 'IP',
+    cell: (info) => (info.getValue() as string | undefined) ?? '-',
+  },
+  {
+    accessorKey: 'message',
+    header: 'Action',
+    cell: (info) => (info.getValue() as string | undefined) ?? '-',
+  },
+]
 
 const formatDate = (value?: string) => {
   if (!value) {
@@ -75,8 +92,16 @@ const loadAuditLogs = async () => {
   errorMessage.value = ''
 
   try {
-    const { data: response } = await api.get('/v1/audit-logs')
+    const { data: response } = await api.get<PaginatedResponse<AuditLog>>('/v1/audit-logs', {
+      params: {
+        page: currentPage.value,
+        perPage: perPage.value,
+      },
+    })
     auditLogs.value = response.data
+    currentPage.value = response.meta.current_page
+    perPage.value = response.meta.per_page
+    lastPage.value = response.meta.last_page
   } catch (error) {
     if (error instanceof AxiosError) {
       const payload = error.response?.data as { message?: string; error?: string } | undefined
@@ -87,6 +112,19 @@ const loadAuditLogs = async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+const handlePaginationChange = (next: PaginationState) => {
+  const nextPage = next.pageIndex + 1
+  const nextPerPage = next.pageSize
+
+  if (nextPage === currentPage.value && nextPerPage === perPage.value) {
+    return
+  }
+
+  currentPage.value = nextPage
+  perPage.value = nextPerPage
+  loadAuditLogs()
 }
 
 onMounted(loadAuditLogs)
