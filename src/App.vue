@@ -1,5 +1,7 @@
 <template>
-  <RouterView />
+  <main class="bg-slate-50 text-black dark:bg-slate-900 dark:text-slate-50">
+    <RouterView />
+  </main>
 </template>
 
 <script setup lang="ts">

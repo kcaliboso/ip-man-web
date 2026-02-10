@@ -1,5 +1,5 @@
 <template>
-  <section class="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4 py-10">
+  <section class="flex-1 w-full flex flex-col justify-center items-center gap-2">
     <h1 class="text-3xl font-bold">Login</h1>
     <p class="mt-2 text-sm text-slate-600">Sign in to access your dashboard.</p>
 
@@ -14,7 +14,10 @@
         <input class="rounded border border-slate-300 px-3 py-2" type="password" required />
       </label>
 
-      <button class="rounded bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700" type="submit">
+      <button
+        class="rounded bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700"
+        type="submit"
+      >
         Login
       </button>
     </form>
@@ -34,7 +37,8 @@ const route = useRoute()
 
 const handleLogin = () => {
   localStorage.setItem('auth_token', 'demo-token')
-  const redirectTarget = typeof route.query.redirect === 'string' ? route.query.redirect : '/dashboard'
+  const redirectTarget =
+    typeof route.query.redirect === 'string' ? route.query.redirect : '/dashboard'
   router.push(redirectTarget)
 }
 </script>
