@@ -1,4 +1,4 @@
-import type { AuthUser } from './AuthUser'
+import type { User } from './User'
 
 export type IpAddress = {
   id: string
@@ -7,5 +7,5 @@ export type IpAddress = {
   comment: string
   createdAt: string
   updatedAt: string
-  createdBy: AuthUser
+  createdBy: User
 }

@@ -1,7 +1,7 @@
-import type { AuthUser } from './AuthUser'
+import type { User } from './User'
 
 export type AuthSession = {
   token: string
   refreshToken: string
-  user: AuthUser
+  user: User
 }
