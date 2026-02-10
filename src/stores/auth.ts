@@ -5,9 +5,8 @@ import type { AuthUser } from '@/types/AuthUser'
 import type { AuthSession } from '@/types/AuthSession'
 
 const AUTH_SESSION_KEY = 'auth_session'
-const LEGACY_AUTH_TOKEN_KEY = 'auth_token'
-const LEGACY_AUTH_USER_KEY = 'auth_user'
 
+// Parse and sanitize persisted auth session payload from localStorage.
 function parseStoredSession(rawSession: string): AuthSession | null {
   try {
     const parsed = JSON.parse(rawSession) as Partial<AuthSession>
@@ -23,6 +22,7 @@ function parseStoredSession(rawSession: string): AuthSession | null {
   }
 }
 
+// Read auth session from localStorage. Falls back to an empty session when missing/invalid.
 function getStoredSession(): AuthSession {
   if (typeof window === 'undefined') {
     return { token: '', user: null }
@@ -37,28 +37,10 @@ function getStoredSession(): AuthSession {
     localStorage.removeItem(AUTH_SESSION_KEY)
   }
 
-  // One-time legacy migration from separate keys.
-  const legacyToken = localStorage.getItem(LEGACY_AUTH_TOKEN_KEY) ?? ''
-  const legacyUserRaw = localStorage.getItem(LEGACY_AUTH_USER_KEY)
-  let legacyUser: AuthUser = null
-
-  if (legacyUserRaw) {
-    try {
-      const parsedUser = JSON.parse(legacyUserRaw)
-      if (parsedUser && typeof parsedUser === 'object' && !Array.isArray(parsedUser)) {
-        legacyUser = parsedUser as Record<string, unknown>
-      }
-    } catch {
-      // ignore malformed legacy user payload
-    }
-  }
-
-  localStorage.removeItem(LEGACY_AUTH_TOKEN_KEY)
-  localStorage.removeItem(LEGACY_AUTH_USER_KEY)
-
-  return { token: legacyToken, user: legacyUser }
+  return { token: '', user: null }
 }
 
+// Decode JWT payload segment (`header.payload.signature`) to inspect claims like `exp`.
 function decodeJwtPayload(token: string): JwtPayload | null {
   try {
     const parts = token.split('.')
@@ -77,6 +59,7 @@ function decodeJwtPayload(token: string): JwtPayload | null {
   }
 }
 
+// Validate token presence, structure, and expiration (if `exp` exists).
 function isJwtTokenValid(token: string) {
   if (!token) {
     return false
@@ -95,6 +78,7 @@ function isJwtTokenValid(token: string) {
 }
 
 export const useAuthStore = defineStore('auth', () => {
+  // Single source of truth for persisted authentication state.
   const session = ref<AuthSession>(getStoredSession())
 
   watch(
@@ -103,16 +87,19 @@ export const useAuthStore = defineStore('auth', () => {
       if (typeof window === 'undefined') {
         return
       }
+      // Keep auth state persistent across page reloads.
       localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(nextSession))
     },
     { immediate: true },
   )
 
+  // Convenience accessors for common auth checks.
   const token = computed(() => session.value.token)
   const user = computed(() => session.value.user)
   const isTokenValid = computed(() => isJwtTokenValid(token.value))
   const isAuthenticated = computed(() => isTokenValid.value)
 
+  // Replace session in one call (used on login success).
   function setSession(nextSession: Partial<AuthSession>) {
     session.value = {
       token: nextSession.token ?? '',
@@ -120,6 +107,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // Update token while preserving current user data.
   function setToken(nextToken: string) {
     session.value = {
       ...session.value,
@@ -127,6 +115,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // Update user profile payload while preserving current token.
   function setUser(nextUser: AuthUser) {
     session.value = {
       ...session.value,
@@ -134,6 +123,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // Clear both token and user to fully logout client-side.
   function clearToken() {
     session.value = {
       token: '',
