@@ -1,5 +1,5 @@
 <template>
-  <section class="flex h-[calc(100vh-3rem)] flex-1 flex-col gap-4 overflow-y-auto p-4">
+  <DashboardSection>
     <article
       class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800"
     >
@@ -45,13 +45,14 @@
         </li>
       </ul>
     </div>
-  </section>
+  </DashboardSection>
 </template>
 
 <script setup lang="ts">
 import { defineAsyncComponent, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import type { IpAddress } from '@/types/IpAddress'
+import DashboardSection from '@/components/sections/DashboardSection.vue'
 
 const DashboardMetrics = defineAsyncComponent(
   () => import('@/components/dashboard/DashboardMetrics.vue'),
