@@ -30,3 +30,28 @@ export function extractToken(data: unknown) {
     payload.access_token ?? payload.token ?? payload.data?.access_token ?? payload.data?.token ?? ''
   )
 }
+
+export function extractUser(data: unknown): Record<string, unknown> | null {
+  if (!data || typeof data !== 'object') {
+    return null
+  }
+
+  const payload = data as {
+    user?: unknown
+    data?: { user?: unknown }
+  }
+
+  if (payload.user && typeof payload.user === 'object' && !Array.isArray(payload.user)) {
+    return payload.user as Record<string, unknown>
+  }
+
+  if (
+    payload.data?.user &&
+    typeof payload.data.user === 'object' &&
+    !Array.isArray(payload.data.user)
+  ) {
+    return payload.data.user as Record<string, unknown>
+  }
+
+  return null
+}

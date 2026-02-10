@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from 'vue'
+import { ref } from 'vue'
 import Input from '@/components/ui/Input.vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
@@ -46,7 +46,7 @@ import { z } from 'zod'
 import api from '@/lib/axios'
 import { useAuthStore } from '@/stores/auth'
 import { toast } from 'vue-sonner'
-import { extractToken, getServerErrorMessage } from '@/lib/auth'
+import { extractToken, extractUser, getServerErrorMessage } from '@/lib/auth'
 
 const loginSchema = z.object({
   email: z.email({ error: 'Please enter a valid email.' }),
@@ -77,6 +77,7 @@ async function handleLogin() {
       email: fieldErrors.properties?.email?.errors?.[0],
       password: fieldErrors.properties?.password?.errors?.[0],
     }
+    isSubmitting.value = false
     return
   }
 
@@ -86,8 +87,6 @@ async function handleLogin() {
       password: result.data.password,
     })
 
-    console.log(response)
-
     const token = extractToken(response.data)
 
     if (!token) {
@@ -95,7 +94,10 @@ async function handleLogin() {
       return
     }
 
-    authStore.setToken(token)
+    authStore.setSession({
+      token,
+      user: extractUser(response.data),
+    })
 
     if (!authStore.isTokenValid) {
       authStore.clearToken()
