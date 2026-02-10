@@ -1,9 +1,8 @@
 import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
-import type { JwtPayload } from '@/types/JwtPayload'
-import type { AuthUser } from '@/types/AuthUser'
 import type { AuthSession } from '@/types/AuthSession'
 import { getStoredSession, isJwtTokenValid } from '@/lib/authHelpers'
+import type { User } from '@/types/User'
 
 const AUTH_SESSION_KEY = 'auth_session'
 
@@ -57,7 +56,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // Update user profile payload while preserving current tokens.
-  function setUser(nextUser: AuthUser) {
+  function setUser(nextUser: User) {
     session.value = {
       ...session.value,
       user: nextUser,

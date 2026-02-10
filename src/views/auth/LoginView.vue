@@ -46,12 +46,8 @@ import { z } from 'zod'
 import api from '@/lib/axios'
 import { useAuthStore } from '@/stores/auth'
 import { toast } from 'vue-sonner'
-import {
-  extractRefreshToken,
-  extractToken,
-  extractUser,
-  getServerErrorMessage,
-} from '@/lib/authHelpers'
+import { getServerErrorMessage } from '@/lib/authHelpers'
+import type { AuthResponse } from '@/types/Response/AuthResponse'
 
 const loginSchema = z.object({
   email: z.email({ error: 'Please enter a valid email.' }),
@@ -87,12 +83,12 @@ async function handleLogin() {
   }
 
   try {
-    const response = await api.post('/auth/login', {
+    const response = await api.post<AuthResponse>('/auth/login', {
       email: result.data.email,
       password: result.data.password,
     })
 
-    const token = extractToken(response.data)
+    const token = response.data.access_token
 
     if (!token) {
       toast.warning('Token is not available.')
@@ -101,8 +97,8 @@ async function handleLogin() {
 
     authStore.setSession({
       token,
-      refreshToken: extractRefreshToken(response.data),
-      user: extractUser(response.data),
+      refreshToken: response.data.refresh_token,
+      user: response.data.user,
     })
 
     if (!authStore.isTokenValid && !authStore.canRefresh) {

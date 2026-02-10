@@ -1,7 +1,7 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios'
-import { extractRefreshToken, extractToken, extractUser } from '@/lib/authHelpers'
 import { useAuthStore } from '@/stores/auth'
 import { pinia } from '@/stores'
+import type { AuthResponse } from '@/types/Response/AuthResponse'
 
 type RetriableRequestConfig = InternalAxiosRequestConfig & {
   _retry?: boolean
@@ -20,7 +20,7 @@ if (!import.meta.env.VITE_API_URL && import.meta.env.DEV) {
 
 let refreshPromise: Promise<string | null> | null = null
 
-const refreshAccessToken = async () => {
+async function refreshAccessToken() {
   if (refreshPromise) {
     return refreshPromise
   }
@@ -34,7 +34,7 @@ const refreshAccessToken = async () => {
     }
 
     try {
-      const response = await axios.post(
+      const response = await axios.post<AuthResponse>(
         '/auth/refresh',
         {
           refresh_token: authStore.refreshToken,
@@ -47,7 +47,7 @@ const refreshAccessToken = async () => {
         },
       )
 
-      const nextAccessToken = extractToken(response.data)
+      const nextAccessToken = response.data.access_token
       if (!nextAccessToken) {
         authStore.clearToken()
         return null
@@ -55,8 +55,8 @@ const refreshAccessToken = async () => {
 
       authStore.setSession({
         token: nextAccessToken,
-        refreshToken: extractRefreshToken(response.data) || authStore.refreshToken,
-        user: extractUser(response.data) ?? authStore.user,
+        refreshToken: response.data.access_token || authStore.refreshToken,
+        user: response.data.user ?? authStore.user,
       })
 
       return nextAccessToken

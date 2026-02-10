@@ -1,11 +1,11 @@
 import type { AuthSession } from '@/types/AuthSession'
-import type { AuthUser } from '@/types/AuthUser'
 import type { JwtPayload } from '@/types/JwtPayload'
+import type { User } from '@/types/User'
 import { AxiosError } from 'axios'
 
 export function getServerErrorMessage(error: unknown) {
   if (!(error instanceof AxiosError) || !error.response?.data) {
-    return 'Login failed. Please try again.'
+    return 'Something went wrong. Please try again.'
   }
 
   const data = error.response.data as {
@@ -15,68 +15,7 @@ export function getServerErrorMessage(error: unknown) {
   }
   const fieldError = Object.values(data.errors ?? {})[0]?.[0]
 
-  return fieldError ?? data.message ?? data.error ?? 'Login failed. Please try again.'
-}
-
-export function extractToken(data: unknown) {
-  if (!data || typeof data !== 'object') {
-    return ''
-  }
-
-  const payload = data as {
-    token?: string
-    access_token?: string
-    data?: { token?: string; access_token?: string }
-  }
-
-  return (
-    payload.access_token ?? payload.token ?? payload.data?.access_token ?? payload.data?.token ?? ''
-  )
-}
-
-export function extractRefreshToken(data: unknown) {
-  if (!data || typeof data !== 'object') {
-    return ''
-  }
-
-  const payload = data as {
-    refresh_token?: string
-    refreshToken?: string
-    data?: { refresh_token?: string; refreshToken?: string }
-  }
-
-  return (
-    payload.refresh_token ??
-    payload.refreshToken ??
-    payload.data?.refresh_token ??
-    payload.data?.refreshToken ??
-    ''
-  )
-}
-
-export function extractUser(data: unknown): AuthUser {
-  if (!data || typeof data !== 'object') {
-    return null
-  }
-
-  const payload = data as {
-    user?: unknown
-    data?: { user?: unknown }
-  }
-
-  if (payload.user && typeof payload.user === 'object' && !Array.isArray(payload.user)) {
-    return payload.user as AuthUser
-  }
-
-  if (
-    payload.data?.user &&
-    typeof payload.data.user === 'object' &&
-    !Array.isArray(payload.data.user)
-  ) {
-    return payload.data.user as AuthUser
-  }
-
-  return null
+  return fieldError ?? data.message ?? data.error ?? 'Something went wrong. Please try again.'
 }
 
 // Parse and sanitize persisted auth session payload from localStorage.
@@ -87,7 +26,7 @@ export function parseStoredSession(rawSession: string): AuthSession | null {
     const refreshToken = typeof parsed.refreshToken === 'string' ? parsed.refreshToken : ''
     const user =
       parsed.user && typeof parsed.user === 'object' && !Array.isArray(parsed.user)
-        ? (parsed.user as AuthUser)
+        ? (parsed.user as User)
         : null
 
     return { token, refreshToken, user }
