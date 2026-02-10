@@ -1,11 +1,18 @@
 <template>
-  <nav class="px-6 h-12 flex justify-between items-center bg-slate-100 rounded-lg drop-shadow-sm">
-    <RouterLink :to="{ name: 'home' }" class="font-bold text-2xl">IPman</RouterLink>
-    <Link link-name="login" link-label="Login" />
+  <nav
+    class="mt-3 flex h-12 items-center justify-between rounded-lg bg-slate-100 px-6 text-slate-900 drop-shadow-sm dark:bg-slate-900 dark:text-slate-100"
+  >
+    <Link link-name="home" link-label="IPman" className="text-2xl font-bold" />
+
+    <div class="flex items-center gap-3">
+      <ThemeModeSwitcher />
+      <Link link-name="login" link-label="Login" />
+    </div>
   </nav>
 </template>
 
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import ThemeModeSwitcher from './ThemeModeSwitcher.vue'
 import Link from '../ui/Link.vue'
 </script>
