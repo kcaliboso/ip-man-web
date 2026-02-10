@@ -88,13 +88,8 @@ let darkModeQuery: MediaQueryList | null = null
 const isThemeMode = (value: string | null): value is ThemeMode =>
   value === 'light' || value === 'dark' || value === 'system'
 
-const getEffectiveTheme = (selectedMode: ThemeMode): EffectiveTheme => {
-  if (selectedMode === 'system') {
-    return darkModeQuery?.matches ? 'dark' : 'light'
-  }
-
-  return selectedMode
-}
+const getEffectiveTheme = (selectedMode: ThemeMode): EffectiveTheme =>
+  selectedMode === 'system' ? (darkModeQuery?.matches ? 'dark' : 'light') : selectedMode
 
 const applyTheme = (selectedMode: ThemeMode) => {
   const root = document.documentElement
@@ -144,7 +139,7 @@ onMounted(() => {
 
   const storedMode = localStorage.getItem(THEME_MODE_KEY)
   mode.value = isThemeMode(storedMode) ? storedMode : 'system'
-  applyTheme(mode.value)
+  effectiveTheme.value = document.documentElement.classList.contains('dark') ? 'dark' : 'light'
 
   document.addEventListener('click', onDocumentClick)
   document.addEventListener('keydown', onDocumentKeydown)

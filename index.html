@@ -5,6 +5,19 @@
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IP Man</title>
+    <script>
+      ;(() => {
+        const THEME_MODE_KEY = 'theme_mode'
+        const savedMode = localStorage.getItem(THEME_MODE_KEY)
+        const mode = savedMode === 'light' || savedMode === 'dark' || savedMode === 'system' ? savedMode : 'system'
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        const isDark = mode === 'dark' || (mode === 'system' && prefersDark)
+        const root = document.documentElement
+
+        root.classList.toggle('dark', isDark)
+        root.style.colorScheme = isDark ? 'dark' : 'light'
+      })()
+    </script>
   </head>
   <body>
     <div id="app"></div>
