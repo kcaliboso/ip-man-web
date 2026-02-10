@@ -46,7 +46,7 @@ import { z } from 'zod'
 import api from '@/lib/axios'
 import { useAuthStore } from '@/stores/auth'
 import { toast } from 'vue-sonner'
-import { extractToken, extractUser, getServerErrorMessage } from '@/lib/auth'
+import { extractRefreshToken, extractToken, extractUser, getServerErrorMessage } from '@/lib/auth'
 
 const loginSchema = z.object({
   email: z.email({ error: 'Please enter a valid email.' }),
@@ -96,12 +96,13 @@ async function handleLogin() {
 
     authStore.setSession({
       token,
+      refreshToken: extractRefreshToken(response.data),
       user: extractUser(response.data),
     })
 
-    if (!authStore.isTokenValid) {
+    if (!authStore.isTokenValid && !authStore.canRefresh) {
       authStore.clearToken()
-      toast.error('Invalid or expired token.')
+      toast.error('Invalid auth payload from server.')
       return
     }
 

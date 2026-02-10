@@ -31,6 +31,26 @@ export function extractToken(data: unknown) {
   )
 }
 
+export function extractRefreshToken(data: unknown) {
+  if (!data || typeof data !== 'object') {
+    return ''
+  }
+
+  const payload = data as {
+    refresh_token?: string
+    refreshToken?: string
+    data?: { refresh_token?: string; refreshToken?: string }
+  }
+
+  return (
+    payload.refresh_token ??
+    payload.refreshToken ??
+    payload.data?.refresh_token ??
+    payload.data?.refreshToken ??
+    ''
+  )
+}
+
 export function extractUser(data: unknown): Record<string, unknown> | null {
   if (!data || typeof data !== 'object') {
     return null

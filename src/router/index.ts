@@ -60,7 +60,7 @@ const router = createRouter({
 router.beforeEach((to) => {
   const authStore = useAuthStore(pinia)
 
-  if (authStore.token && !authStore.isTokenValid) {
+  if (authStore.token && !authStore.isTokenValid && !authStore.canRefresh) {
     authStore.clearToken()
   }
 
