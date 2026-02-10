@@ -23,9 +23,7 @@
         </div>
       </header>
 
-      <section>
-        <RouterView />
-      </section>
+      <RouterView />
     </div>
   </div>
 </template>
