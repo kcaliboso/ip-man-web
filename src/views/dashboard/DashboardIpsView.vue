@@ -49,12 +49,14 @@ import type { IpAddress } from '@/types/IpAddress'
 import type { PaginatedResponse } from '@/types/Response/PaginatedResponse'
 import type { ColumnDef, SortingState } from '@tanstack/vue-table'
 import { AxiosError } from 'axios'
-import { onMounted, ref } from 'vue'
+import { computed, h, onMounted, ref } from 'vue'
 import DataTable from '@/components/ui/DataTable.vue'
 import Spinner from '@/components/shared/Spinner.vue'
 import Button from '@/components/ui/Button.vue'
-import { PlusIcon } from '@heroicons/vue/24/solid'
+import { PencilSquareIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/solid'
 import CreateIpWrapper from '@/components/wrappers/CreateIpWrapper.vue'
+import { useAuthStore } from '@/stores/auth'
+import { Role } from '@/types/Enums/Role'
 
 const ipAddresses = ref<IpAddress[]>([])
 const isLoading = ref(true)
@@ -64,6 +66,8 @@ const perPage = ref(10)
 const lastPage = ref(1)
 const sorting = ref<SortingState>([{ id: 'createdAt', desc: true }])
 const isOpen = ref<boolean>(false)
+const authStore = useAuthStore()
+const isAdmin = computed(() => authStore.user?.role === Role.Admin)
 
 const columns: ColumnDef<IpAddress>[] = [
   {
@@ -92,6 +96,55 @@ const columns: ColumnDef<IpAddress>[] = [
     accessorFn: (row) => row.createdBy?.name ?? '-',
     enableSorting: false,
     cell: (info) => (info.getValue() as string | undefined) ?? '-',
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    enableSorting: false,
+    cell: ({ row }) => {
+      const ipAddress = row.original
+      const isOwner = ipAddress.createdBy?.id === authStore.user?.id
+      const canEdit = isAdmin.value || isOwner
+      const canDelete = isAdmin.value || isOwner
+
+      const actions = []
+
+      if (canEdit) {
+        actions.push(
+          h(
+            'div',
+            {
+              class:
+                'inline-flex cursor-pointer items-center justify-center rounded-md border border-slate-300 p-2 text-slate-700 hover:bg-slate-100 dark:text-slate-50 dark:hover:text-slate-900',
+              onClick: (event: Event) => {
+                event.stopPropagation()
+                handleEditIp(ipAddress)
+              },
+            },
+            [h(PencilSquareIcon, { class: 'size-4' })],
+          ),
+        )
+      }
+
+      if (canDelete) {
+        actions.push(
+          h(
+            'div',
+            {
+              class:
+                'inline-flex cursor-pointer items-center justify-center rounded-md bg-red-500 p-2 text-white hover:bg-red-700',
+              onClick: (event: Event) => {
+                event.stopPropagation()
+                handleDeleteIp(ipAddress)
+              },
+            },
+            [h(TrashIcon, { class: 'size-4' })],
+          ),
+        )
+      }
+
+      return h('div', { class: 'flex items-center gap-2' }, actions)
+    },
   },
 ]
 
@@ -132,6 +185,18 @@ function handleOpenModal() {
 function handleIpCreated() {
   currentPage.value = 1
   loadIpAddresses()
+}
+
+function handleViewIp(ipAddress: IpAddress) {
+  void ipAddress
+}
+
+function handleEditIp(ipAddress: IpAddress) {
+  void ipAddress
+}
+
+function handleDeleteIp(ipAddress: IpAddress) {
+  void ipAddress
 }
 
 const { handlePaginationChange, handleSortingChange } = useServerTableControls({

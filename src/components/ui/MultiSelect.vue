@@ -1,8 +1,8 @@
 <template>
-  <div ref="rootRef" class="relative w-full max-w-md">
+  <div ref="rootRef" class="relative w-full max-w-md z-0">
     <!-- Input Wrapper -->
     <div
-      class="flex flex-wrap items-center gap-2 border border-slate-300 rounded-md px-3 py-2 bg-white cursor-text"
+      class="flex flex-wrap items-center gap-2 border border-slate-300 rounded-md px-3 py-2 bg-slate-50 dark:bg-slate-900 cursor-text"
       @click="isOpen = true"
     >
       <!-- Tags -->
@@ -27,7 +27,7 @@
     <!-- Dropdown -->
     <ul
       v-if="isOpen && (filteredOptions.length || creatable)"
-      class="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-auto"
+      class="absolute z-10 mt-1 w-full bg-slate-50 dark:bg-slate-900 border rounded-md shadow-lg max-h-60 overflow-auto"
     >
       <li
         v-for="(option, index) in filteredOptions"
@@ -35,8 +35,8 @@
         @click="selectOption(option)"
         class="px-3 py-2 cursor-pointer text-sm"
         :class="{
-          'bg-blue-500 text-white': index === highlightedIndex,
-          'hover:bg-gray-100': index !== highlightedIndex,
+          'bg-blue-500 text-white dark:text-black': index === highlightedIndex,
+          'hover:bg-gray-100 dark:hover:bg-slate-800': index !== highlightedIndex,
         }"
       >
         {{ option.label }}

@@ -2,7 +2,7 @@
   <div class="flex h-full min-h-0 flex-col">
     <div class="min-h-0 flex-1 overflow-auto">
       <table class="min-w-full border-collapse text-sm">
-        <thead class="sticky top-0 bg-slate-100 text-left dark:bg-slate-800">
+        <thead class="sticky top-0 bg-slate-100 text-left dark:bg-slate-950">
           <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
             <th
               v-for="header in headerGroup.headers"
@@ -36,7 +36,7 @@
           <tr
             v-for="row in table.getRowModel().rows"
             :key="row.id"
-            class="border-t border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50"
+            class="border-t border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-950"
           >
             <td v-for="cell in row.getVisibleCells()" :key="cell.id" class="px-4 py-3">
               <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />

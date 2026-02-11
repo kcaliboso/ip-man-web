@@ -1,5 +1,5 @@
 <template>
-  <div ref="containerRef" class="relative">
+  <div ref="containerRef" class="relative z-50">
     <button
       type="button"
       class="inline-flex items-center gap-1 rounded-md border border-slate-300 p-1.5 transition-colors hover:bg-slate-200 dark:border-slate-700 dark:hover:bg-slate-800"
@@ -8,30 +8,9 @@
       aria-haspopup="menu"
       @click="toggleMenu"
     >
-      <svg
-        v-if="effectiveTheme === 'light'"
-        class="size-4"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.8"
-      >
-        <circle cx="12" cy="12" r="4" />
-        <path d="M12 2v2.2M12 19.8V22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2 12h2.2M19.8 12H22M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6" />
-      </svg>
-      <svg
-        v-else
-        class="size-4"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.8"
-      >
-        <path d="M20.3 14.6A8.5 8.5 0 0 1 9.4 3.7a9 9 0 1 0 10.9 10.9Z" />
-      </svg>
-      <svg class="size-3 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="m6 9 6 6 6-6" />
-      </svg>
+      <SunIcon class="size-5" v-if="effectiveTheme === 'light'" />
+      <MoonIcon class="size-5" v-else />
+      <ChevronDownIcon class="size-3" />
     </button>
 
     <div
@@ -73,6 +52,7 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { SunIcon, MoonIcon, ChevronDownIcon } from '@heroicons/vue/24/solid'
 
 type ThemeMode = 'light' | 'dark' | 'system'
 type EffectiveTheme = 'light' | 'dark'

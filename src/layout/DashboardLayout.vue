@@ -10,14 +10,14 @@
 
     <div id="dashboard-content" class="flex min-h-0 flex-1 flex-col">
       <header
-        class="flex h-12 items-center justify-between px-4 drop-shadow-sm bg-white dark:bg-slate-900"
+        class="relative z-30 flex h-12 items-center justify-between px-4 drop-shadow-sm bg-white dark:bg-slate-900"
       >
         <div class="flex items-center gap-2">
           <Button variant="link" @click="toggleSidebar">
             <Bars3Icon class="size-6" />
           </Button>
         </div>
-        <div class="flex gap-3">
+        <div class="flex items-center gap-3">
           <ThemeModeSwitcher />
           <Button v-show="authStore.token" variant="link" @click="logout">Logout</Button>
         </div>
