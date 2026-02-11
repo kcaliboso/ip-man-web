@@ -1,6 +1,6 @@
 <template>
   <DashboardSection>
-    <div class="w-full flex justify-between items-center cursor">
+    <div class="relative z-20 w-full flex justify-between items-center cursor">
       <h1 class="text-2xl font-semibold">Audit logs</h1>
       <div class="flex items-center gap-3">
         <MultiSelect

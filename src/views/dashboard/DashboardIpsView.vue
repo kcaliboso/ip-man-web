@@ -11,6 +11,11 @@
       :ip-address="selectedIpAddress"
       @updated="handleIpUpdated"
     />
+    <DeleteIpWrapper
+      v-model="isDeleteOpen"
+      :ip-address="selectedIpAddress"
+      @deleted="handleIpDeleted"
+    />
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-semibold">IP Addresses</h1>
       <div>
@@ -69,6 +74,7 @@ import { PencilSquareIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/solid'
 import CreateIpWrapper from '@/components/wrappers/CreateIpWrapper.vue'
 import ViewIpWrapper from '@/components/wrappers/ViewIpWrapper.vue'
 import EditIpWrapper from '@/components/wrappers/EditIpWrapper.vue'
+import DeleteIpWrapper from '@/components/wrappers/DeleteIpWrapper.vue'
 import { useAuthStore } from '@/stores/auth'
 import { Role } from '@/types/Enums/Role'
 
@@ -82,6 +88,7 @@ const sorting = ref<SortingState>([{ id: 'createdAt', desc: true }])
 const isOpen = ref<boolean>(false)
 const isViewOpen = ref<boolean>(false)
 const isEditOpen = ref<boolean>(false)
+const isDeleteOpen = ref<boolean>(false)
 const selectedIpAddress = ref<IpAddress | null>(null)
 const authStore = useAuthStore()
 const isAdmin = computed(() => authStore.user?.role === Role.Admin)
@@ -120,9 +127,8 @@ const columns: ColumnDef<IpAddress>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const ipAddress = row.original
-      const isOwner = ipAddress.createdBy?.id === authStore.user?.id
-      const canEdit = isAdmin.value || isOwner
-      const canDelete = isAdmin.value
+      const canEdit = canUserEditIp(ipAddress)
+      const canDelete = canUserDeleteIp()
 
       const actions = []
 
@@ -219,7 +225,12 @@ function handleEditIp(ipAddress: IpAddress) {
 }
 
 function handleDeleteIp(ipAddress: IpAddress) {
-  void ipAddress
+  if (!canUserDeleteIp()) {
+    return
+  }
+
+  selectedIpAddress.value = ipAddress
+  isDeleteOpen.value = true
 }
 
 function handleRowClick(ipAddress: IpAddress) {
@@ -238,6 +249,14 @@ function handleIpUpdated() {
 function canUserEditIp(ipAddress: IpAddress) {
   const isOwner = ipAddress.createdBy?.id === authStore.user?.id
   return isAdmin.value || isOwner
+}
+
+function canUserDeleteIp() {
+  return isAdmin.value
+}
+
+function handleIpDeleted() {
+  loadIpAddresses()
 }
 
 const { handlePaginationChange, handleSortingChange } = useServerTableControls({
