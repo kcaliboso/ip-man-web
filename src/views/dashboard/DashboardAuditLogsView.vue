@@ -1,6 +1,22 @@
 <template>
   <DashboardSection>
-    <h1 class="text-2xl font-semibold">Audit logs</h1>
+    <div class="w-full flex justify-between items-center cursor">
+      <h1 class="text-2xl font-semibold">Audit logs</h1>
+      <div class="flex items-center gap-3">
+        <MultiSelect
+          v-model="selectedEvents"
+          :options="events"
+          placeholder="Select Events"
+          @cleared="handleFilterClear"
+        />
+        <Button
+          class-name="rounded-lg disabled:cursor-not-allowed"
+          :disabled="!selectedEvents.length"
+          @click="handleFilter"
+          >Filter</Button
+        >
+      </div>
+    </div>
 
     <div
       class="min-h-0 flex-1 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
@@ -45,6 +61,9 @@ import { formatDate } from '@/lib/utils'
 import { useServerTableControls } from '@/composables/useServerTableControls'
 import { useAuthStore } from '@/stores/auth'
 import { Role } from '@/types/Enums/Role'
+import { AuditEvent, AuditEventLabels } from '@/types/Enums/AuditEvent'
+import MultiSelect, { type SelectOption } from '@/components/ui/MultiSelect.vue'
+import Button from '@/components/ui/Button.vue'
 
 const auditLogs = ref<AuditLog[]>([])
 const isLoading = ref(true)
@@ -54,6 +73,13 @@ const perPage = ref(10)
 const lastPage = ref(1)
 const sorting = ref<SortingState>([{ id: 'createdAt', desc: true }])
 const authStore = useAuthStore()
+const selectedEvents = ref<SelectOption[]>([])
+const events = ref<SelectOption[]>(
+  Object.values(AuditEvent).map((value) => ({
+    label: AuditEventLabels[value],
+    value,
+  })),
+)
 
 const columns: ColumnDef<AuditLog>[] = [
   {
@@ -78,14 +104,16 @@ const columns: ColumnDef<AuditLog>[] = [
     cell: (info) => (info.getValue() as string | undefined) ?? '-',
   },
   {
-    accessorKey: 'ipAddress',
+    id: 'ipAddress',
     header: 'IP',
+    accessorFn: (row) =>
+      typeof row.ipAddress === 'string' ? row.ipAddress : (row.ipAddress?.ip ?? '-'),
     enableSorting: false,
     cell: (info) => (info.getValue() as string | undefined) ?? '-',
   },
   {
     accessorKey: 'message',
-    header: 'Action',
+    header: 'message',
     enableSorting: false,
     cell: (info) => (info.getValue() as string | undefined) ?? '-',
   },
@@ -104,6 +132,7 @@ async function loadAuditLogs() {
         perPage: perPage.value,
         sortBy: activeSort?.id,
         sortDirection: activeSort ? (activeSort.desc ? 'desc' : 'asc') : undefined,
+        event: selectedEvents.value.map((option) => option.value),
       },
     })
     auditLogs.value = response.data
@@ -120,6 +149,16 @@ async function loadAuditLogs() {
   } finally {
     isLoading.value = false
   }
+}
+
+function handleFilterClear() {
+  currentPage.value = 1
+  loadAuditLogs()
+}
+
+function handleFilter() {
+  currentPage.value = 1
+  loadAuditLogs()
 }
 
 const { handlePaginationChange, handleSortingChange } = useServerTableControls({
