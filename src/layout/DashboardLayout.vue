@@ -1,5 +1,5 @@
 <template>
-  <div class="relative flex h-screen w-full px-2 md:px-4 2xl:px-0">
+  <div class="relative flex h-screen w-full">
     <div
       v-if="isSidebarOpen"
       class="fixed inset-0 z-30 bg-slate-900/40 lg:hidden"
