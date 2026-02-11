@@ -1,7 +1,16 @@
 <template>
   <DashboardSection>
     <CreateIpWrapper v-model="isOpen" @created="handleIpCreated" />
-    <ViewIpWrapper v-model="isViewOpen" :ip-address="selectedIpAddress" />
+    <ViewIpWrapper
+      v-model="isViewOpen"
+      :ip-address="selectedIpAddress"
+      @edit="handleEditFromView"
+    />
+    <EditIpWrapper
+      v-model="isEditOpen"
+      :ip-address="selectedIpAddress"
+      @updated="handleIpUpdated"
+    />
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-semibold">IP Addresses</h1>
       <div>
@@ -59,6 +68,7 @@ import Button from '@/components/ui/Button.vue'
 import { PencilSquareIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/solid'
 import CreateIpWrapper from '@/components/wrappers/CreateIpWrapper.vue'
 import ViewIpWrapper from '@/components/wrappers/ViewIpWrapper.vue'
+import EditIpWrapper from '@/components/wrappers/EditIpWrapper.vue'
 import { useAuthStore } from '@/stores/auth'
 import { Role } from '@/types/Enums/Role'
 
@@ -71,6 +81,7 @@ const lastPage = ref(1)
 const sorting = ref<SortingState>([{ id: 'createdAt', desc: true }])
 const isOpen = ref<boolean>(false)
 const isViewOpen = ref<boolean>(false)
+const isEditOpen = ref<boolean>(false)
 const selectedIpAddress = ref<IpAddress | null>(null)
 const authStore = useAuthStore()
 const isAdmin = computed(() => authStore.user?.role === Role.Admin)
@@ -111,7 +122,7 @@ const columns: ColumnDef<IpAddress>[] = [
       const ipAddress = row.original
       const isOwner = ipAddress.createdBy?.id === authStore.user?.id
       const canEdit = isAdmin.value || isOwner
-      const canDelete = isAdmin.value || isOwner
+      const canDelete = isAdmin.value
 
       const actions = []
 
@@ -199,7 +210,12 @@ function handleViewIp(ipAddress: IpAddress) {
 }
 
 function handleEditIp(ipAddress: IpAddress) {
-  void ipAddress
+  if (!canUserEditIp(ipAddress)) {
+    return
+  }
+
+  selectedIpAddress.value = ipAddress
+  isEditOpen.value = true
 }
 
 function handleDeleteIp(ipAddress: IpAddress) {
@@ -208,6 +224,20 @@ function handleDeleteIp(ipAddress: IpAddress) {
 
 function handleRowClick(ipAddress: IpAddress) {
   handleViewIp(ipAddress)
+}
+
+function handleEditFromView(ipAddress: IpAddress) {
+  isViewOpen.value = false
+  handleEditIp(ipAddress)
+}
+
+function handleIpUpdated() {
+  loadIpAddresses()
+}
+
+function canUserEditIp(ipAddress: IpAddress) {
+  const isOwner = ipAddress.createdBy?.id === authStore.user?.id
+  return isAdmin.value || isOwner
 }
 
 const { handlePaginationChange, handleSortingChange } = useServerTableControls({
