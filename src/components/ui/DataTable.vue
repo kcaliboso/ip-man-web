@@ -9,11 +9,26 @@
               :key="header.id"
               class="px-4 py-3 font-semibold"
             >
-              <FlexRender
-                v-if="!header.isPlaceholder"
-                :render="header.column.columnDef.header"
-                :props="header.getContext()"
-              />
+              <template v-if="!header.isPlaceholder">
+                <button
+                  v-if="header.column.getCanSort()"
+                  class="inline-flex items-center gap-1 select-none hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                  @click="header.column.toggleSorting(header.column.getIsSorted() === 'asc')"
+                >
+                  <FlexRender
+                    :render="header.column.columnDef.header"
+                    :props="header.getContext()"
+                  />
+                  <span class="text-xs text-slate-500 dark:text-slate-400">
+                    {{ getSortIndicator(header.column.getIsSorted()) }}
+                  </span>
+                </button>
+                <FlexRender
+                  v-else
+                  :render="header.column.columnDef.header"
+                  :props="header.getContext()"
+                />
+              </template>
             </th>
           </tr>
         </thead>
@@ -21,7 +36,7 @@
           <tr
             v-for="row in table.getRowModel().rows"
             :key="row.id"
-            class="border-t border-slate-200 dark:border-slate-800"
+            class="border-t border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50"
           >
             <td v-for="cell in row.getVisibleCells()" :key="cell.id" class="px-4 py-3">
               <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
@@ -49,7 +64,9 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <span>Page {{ table.getState().pagination.pageIndex + 1 }} of {{ table.getPageCount() }}</span>
+        <span
+          >Page {{ table.getState().pagination.pageIndex + 1 }} of {{ table.getPageCount() }}</span
+        >
         <button
           class="rounded border border-slate-300 px-2 py-1 disabled:opacity-40 dark:border-slate-700"
           :disabled="!table.getCanPreviousPage()"
@@ -75,14 +92,18 @@ import {
   FlexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
+  type Column,
   useVueTable,
   type ColumnDef,
   type PaginationState,
+  type SortingState,
   type Updater,
 } from '@tanstack/vue-table'
 
 const emit = defineEmits<{
   paginationChange: [value: PaginationState]
+  sortingChange: [value: SortingState]
 }>()
 
 const props = defineProps({
@@ -98,6 +119,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  manualSorting: {
+    type: Boolean,
+    default: false,
+  },
   pageIndex: {
     type: Number,
     default: 0,
@@ -110,6 +135,14 @@ const props = defineProps({
     type: Number,
     default: undefined,
   },
+  initialSorting: {
+    type: Array as PropType<SortingState>,
+    default: () => [],
+  },
+  sorting: {
+    type: Array as PropType<SortingState>,
+    default: undefined,
+  },
 })
 
 const tableData = computed(() => props.data)
@@ -117,6 +150,7 @@ const pagination = ref<PaginationState>({
   pageIndex: 0,
   pageSize: 10,
 })
+const sorting = ref<SortingState>(props.initialSorting)
 
 const onPaginationChange = (updater: Updater<PaginationState>) => {
   if (props.manualPagination) {
@@ -129,10 +163,33 @@ const onPaginationChange = (updater: Updater<PaginationState>) => {
   emit('paginationChange', pagination.value)
 }
 
+const onSortingChange = (updater: Updater<SortingState>) => {
+  const current = props.sorting ?? sorting.value
+  const next = updater instanceof Function ? updater(current) : updater
+
+  if (props.manualSorting) {
+    emit('sortingChange', next)
+    return
+  }
+
+  sorting.value = next
+  emit('sortingChange', next)
+}
+
 const externalPagination = computed<PaginationState>(() => ({
   pageIndex: props.pageIndex,
   pageSize: props.pageSize,
 }))
+
+const getSortIndicator = (sorted: ReturnType<Column<any>['getIsSorted']>) => {
+  if (sorted === 'asc') {
+    return '▲'
+  }
+  if (sorted === 'desc') {
+    return '▼'
+  }
+  return '↕'
+}
 
 const table = useVueTable({
   get data() {
@@ -145,12 +202,18 @@ const table = useVueTable({
     return props.pageCount
   },
   manualPagination: props.manualPagination,
+  manualSorting: props.manualSorting,
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
+  getSortedRowModel: props.manualSorting ? undefined : getSortedRowModel(),
   onPaginationChange,
+  onSortingChange,
   state: {
     get pagination() {
       return props.manualPagination ? externalPagination.value : pagination.value
+    },
+    get sorting() {
+      return props.sorting ?? sorting.value
     },
   },
 })

@@ -19,10 +19,13 @@
         :data="auditLogs"
         :columns="columns"
         :manual-pagination="true"
+        :manual-sorting="true"
+        :sorting="sorting"
         :page-index="currentPage - 1"
         :page-size="perPage"
         :page-count="lastPage"
         @pagination-change="handlePaginationChange"
+        @sorting-change="handleSortingChange"
       />
     </div>
   </DashboardSection>
@@ -31,7 +34,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { AxiosError } from 'axios'
-import type { ColumnDef, PaginationState } from '@tanstack/vue-table'
+import type { ColumnDef, PaginationState, SortingState } from '@tanstack/vue-table'
 import DashboardSection from '@/components/sections/DashboardSection.vue'
 import DataTable from '@/components/ui/DataTable.vue'
 import api from '@/lib/axios'
@@ -45,32 +48,40 @@ const errorMessage = ref('')
 const currentPage = ref(1)
 const perPage = ref(10)
 const lastPage = ref(1)
+const sorting = ref<SortingState>([{ id: 'createdAt', desc: true }])
 
 const columns: ColumnDef<AuditLog>[] = [
   {
     accessorKey: 'createdAt',
     header: 'Date',
+    enableSorting: true,
+    sortingFn: 'datetime',
     cell: (info) => formatDate(info.getValue() as string | undefined),
   },
   {
     accessorKey: 'event',
     header: 'Event',
+    enableSorting: true,
+    sortingFn: 'alphanumeric',
     cell: (info) => (info.getValue() as string | undefined) ?? '-',
   },
   {
     id: 'user',
     header: 'User',
     accessorFn: (row) => row.user?.name ?? '-',
+    enableSorting: false,
     cell: (info) => (info.getValue() as string | undefined) ?? '-',
   },
   {
     accessorKey: 'ipAddress',
     header: 'IP',
+    enableSorting: false,
     cell: (info) => (info.getValue() as string | undefined) ?? '-',
   },
   {
     accessorKey: 'message',
     header: 'Action',
+    enableSorting: false,
     cell: (info) => (info.getValue() as string | undefined) ?? '-',
   },
 ]
@@ -91,12 +102,15 @@ const formatDate = (value?: string) => {
 const loadAuditLogs = async () => {
   isLoading.value = true
   errorMessage.value = ''
+  const activeSort = sorting.value[0]
 
   try {
     const { data: response } = await api.get<PaginatedResponse<AuditLog>>('/v1/audit-logs', {
       params: {
         page: currentPage.value,
         perPage: perPage.value,
+        sortBy: activeSort?.id,
+        sortDirection: activeSort ? (activeSort.desc ? 'desc' : 'asc') : undefined,
       },
     })
     auditLogs.value = response.data
@@ -125,6 +139,19 @@ const handlePaginationChange = (next: PaginationState) => {
 
   currentPage.value = nextPage
   perPage.value = nextPerPage
+  loadAuditLogs()
+}
+
+const handleSortingChange = (next: SortingState) => {
+  const [currentSort] = sorting.value
+  const [nextSort] = next
+
+  if (currentSort?.id === nextSort?.id && currentSort?.desc === nextSort?.desc) {
+    return
+  }
+
+  sorting.value = next
+  currentPage.value = 1
   loadAuditLogs()
 }
 
