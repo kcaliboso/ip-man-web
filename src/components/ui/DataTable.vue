@@ -36,7 +36,11 @@
           <tr
             v-for="row in table.getRowModel().rows"
             :key="row.id"
-            class="border-t border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-950"
+            :class="[
+              'border-t border-slate-200 dark:border-slate-800',
+              props.clickable ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-950' : '',
+            ]"
+            @click="handleRowClick(row.original)"
           >
             <td v-for="cell in row.getVisibleCells()" :key="cell.id" class="px-4 py-3">
               <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
@@ -104,6 +108,7 @@ import {
 const emit = defineEmits<{
   paginationChange: [value: PaginationState]
   sortingChange: [value: SortingState]
+  rowClick: [value: any]
 }>()
 
 const props = defineProps({
@@ -142,6 +147,10 @@ const props = defineProps({
   sorting: {
     type: Array as PropType<SortingState>,
     default: undefined,
+  },
+  clickable: {
+    type: Boolean,
+    default: false,
   },
 })
 
@@ -217,4 +226,12 @@ const table = useVueTable({
     },
   },
 })
+
+function handleRowClick(row: any) {
+  if (!props.clickable) {
+    return
+  }
+
+  emit('rowClick', row)
+}
 </script>

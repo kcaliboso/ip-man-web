@@ -1,6 +1,7 @@
 <template>
   <DashboardSection>
     <CreateIpWrapper v-model="isOpen" @created="handleIpCreated" />
+    <ViewIpWrapper v-model="isViewOpen" :ip-address="selectedIpAddress" />
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-semibold">IP Addresses</h1>
       <div>
@@ -33,7 +34,9 @@
         :page-index="currentPage - 1"
         :page-size="perPage"
         :page-count="lastPage"
+        :clickable="true"
         @pagination-change="handlePaginationChange"
+        @row-click="handleRowClick"
         @sorting-change="handleSortingChange"
       />
     </div>
@@ -55,6 +58,7 @@ import Spinner from '@/components/shared/Spinner.vue'
 import Button from '@/components/ui/Button.vue'
 import { PencilSquareIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/solid'
 import CreateIpWrapper from '@/components/wrappers/CreateIpWrapper.vue'
+import ViewIpWrapper from '@/components/wrappers/ViewIpWrapper.vue'
 import { useAuthStore } from '@/stores/auth'
 import { Role } from '@/types/Enums/Role'
 
@@ -66,6 +70,8 @@ const perPage = ref(10)
 const lastPage = ref(1)
 const sorting = ref<SortingState>([{ id: 'createdAt', desc: true }])
 const isOpen = ref<boolean>(false)
+const isViewOpen = ref<boolean>(false)
+const selectedIpAddress = ref<IpAddress | null>(null)
 const authStore = useAuthStore()
 const isAdmin = computed(() => authStore.user?.role === Role.Admin)
 
@@ -188,7 +194,8 @@ function handleIpCreated() {
 }
 
 function handleViewIp(ipAddress: IpAddress) {
-  void ipAddress
+  selectedIpAddress.value = ipAddress
+  isViewOpen.value = true
 }
 
 function handleEditIp(ipAddress: IpAddress) {
@@ -197,6 +204,10 @@ function handleEditIp(ipAddress: IpAddress) {
 
 function handleDeleteIp(ipAddress: IpAddress) {
   void ipAddress
+}
+
+function handleRowClick(ipAddress: IpAddress) {
+  handleViewIp(ipAddress)
 }
 
 const { handlePaginationChange, handleSortingChange } = useServerTableControls({
