@@ -4,9 +4,25 @@
       <WrapperItem label="Event" :value="auditLog.event" />
       <WrapperItem label="Message" :value="auditLog.message" />
       <WrapperItem label="User" :value="auditLog.user?.name ?? undefined" />
-      <WrapperItem label="IP Address" :value="ipAddressValue" />
+      <WrapperItem label="IP Address" :value="auditLog.ipAddress" />
+      <div class="flex flex-col gap-1" v-show="auditLog.oldValues">
+        <p class="font-medium">Old Values</p>
+        <div class="grid grid-cols-2 gap-2">
+          <WrapperItem label="IP Address" :value="auditLog.oldValues?.ip" />
+          <WrapperItem label="Label" :value="auditLog.oldValues?.label" />
+          <WrapperItem label="Comment" :value="auditLog.oldValues?.comment" />
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1" v-show="auditLog.newValues">
+        <p class="font-medium">New Values</p>
+        <div class="grid grid-cols-2 gap-2">
+          <WrapperItem label="IP Address" :value="auditLog.newValues?.ip" />
+          <WrapperItem label="Label" :value="auditLog.newValues?.label" />
+          <WrapperItem label="Comment" :value="auditLog.newValues?.comment" />
+        </div>
+      </div>
       <WrapperItem label="Created At" :value="formatDate(auditLog.createdAt)" />
-      <WrapperItem label="Updated At" :value="formatDate(auditLog.updatedAt)" />
     </div>
   </Modal>
 </template>
@@ -32,19 +48,5 @@ const emit = defineEmits<{
 const open = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit('update:modelValue', value),
-})
-
-const ipAddressValue = computed(() => {
-  const ipAddress = props.auditLog?.ipAddress
-
-  if (!ipAddress) {
-    return undefined
-  }
-
-  if (typeof ipAddress === 'string') {
-    return ipAddress
-  }
-
-  return ipAddress.ip ?? undefined
 })
 </script>
