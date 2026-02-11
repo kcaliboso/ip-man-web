@@ -111,14 +111,6 @@ const columns: ColumnDef<AuditLog>[] = [
     cell: (info) => (info.getValue() as string | undefined) ?? '-',
   },
   {
-    id: 'ipAddress',
-    header: 'IP',
-    accessorFn: (row) =>
-      typeof row.ipAddress === 'string' ? row.ipAddress : (row.ipAddress?.ip ?? '-'),
-    enableSorting: false,
-    cell: (info) => (info.getValue() as string | undefined) ?? '-',
-  },
-  {
     accessorKey: 'message',
     header: 'message',
     enableSorting: false,

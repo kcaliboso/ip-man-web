@@ -1,4 +1,3 @@
-import type { IpAddress } from './IpAddress'
 import type { User } from './User'
 
 type Meta = {
@@ -9,12 +8,13 @@ type Meta = {
 }
 type OldValues = Record<string, unknown> | null
 type NewValues = Record<string, unknown> | null
+type AuditLogIpAddress = { ip?: string | null } | string | null
 
 export type AuditLog = {
   id: string
   event: string
   message: string
-  ipAddress: IpAddress
+  ipAddress: AuditLogIpAddress
   sessionId: string
   oldValues: OldValues
   newValues: NewValues
