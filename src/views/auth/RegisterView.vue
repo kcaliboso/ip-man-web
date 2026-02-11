@@ -42,12 +42,10 @@
         required
       />
 
-      <button
-        class="rounded bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700"
-        type="submit"
-      >
-        Create account
-      </button>
+      <Button type="submit">
+        <p v-if="isSubmitting">Creating account...</p>
+        <p v-else>Create account</p>
+      </Button>
     </form>
 
     <RouterLink class="mt-6 text-sm underline" :to="{ name: 'login' }"
@@ -59,8 +57,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import Input from '@/components/ui/Input.vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import Button from '@/components/ui/Button.vue'
 import { z } from 'zod'
+import api from '@/lib/axios'
+import { useAuthStore } from '@/stores/auth'
+import { toast } from 'vue-sonner'
+import { getServerErrorMessage } from '@/lib/authHelpers'
+import type { AuthResponse } from '@/types/Response/AuthResponse'
 
 const registerSchema = z
   .object({
@@ -86,9 +90,13 @@ const errors = ref<{
 }>({})
 
 const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
+const isSubmitting = ref(false)
 
-const handleRegister = () => {
+const handleRegister = async () => {
   errors.value = {}
+  isSubmitting.value = true
 
   const result = registerSchema.safeParse({
     fullName: fullName.value,
@@ -105,9 +113,44 @@ const handleRegister = () => {
       password: fieldErrors.properties?.password?.errors?.[0],
       passwordConfirmation: fieldErrors.properties?.passwordConfirmation?.errors?.[0],
     }
+    isSubmitting.value = false
     return
   }
 
-  console.log(result)
+  try {
+    const response = await api.post<AuthResponse>('/auth/register', {
+      name: result.data.fullName,
+      email: result.data.email,
+      password: result.data.password,
+      password_confirmation: result.data.passwordConfirmation,
+    })
+
+    const token = response.data.access_token
+
+    if (!token) {
+      toast.warning('Token is not available.')
+      return
+    }
+
+    authStore.setSession({
+      token,
+      refreshToken: response.data.refresh_token,
+      user: response.data.user,
+    })
+
+    if (!authStore.isTokenValid && !authStore.canRefresh) {
+      authStore.clearToken()
+      toast.error('Invalid auth payload from server.')
+      return
+    }
+
+    const redirectTarget =
+      typeof route.query.redirect === 'string' ? route.query.redirect : '/dashboard'
+    router.push(redirectTarget)
+  } catch (error) {
+    toast.error(getServerErrorMessage(error))
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
