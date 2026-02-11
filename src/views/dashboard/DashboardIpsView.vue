@@ -1,6 +1,17 @@
 <template>
   <DashboardSection>
-    <h1 class="text-2xl font-semibold">IP Addresses</h1>
+    <Modal v-model="isOpen" title="Create IP Address">
+      <h1>hey there</h1>
+    </Modal>
+    <div class="flex items-center justify-between">
+      <h1 class="text-2xl font-semibold">IP Addresses</h1>
+      <div>
+        <Button @click="handleOpenModal" class-name="flex gap-2 items-center"
+          ><PlusIcon class="size-6" />
+          <p>IP Address</p></Button
+        >
+      </div>
+    </div>
 
     <div
       class="min-h-0 flex-1 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
@@ -43,6 +54,9 @@ import { AxiosError } from 'axios'
 import { onMounted, ref } from 'vue'
 import DataTable from '@/components/ui/DataTable.vue'
 import Spinner from '@/components/shared/Spinner.vue'
+import Button from '@/components/ui/Button.vue'
+import { PlusIcon } from '@heroicons/vue/24/solid'
+import Modal from '@/components/shared/Modal.vue'
 
 const ipAddresses = ref<IpAddress[]>([])
 const isLoading = ref(true)
@@ -51,6 +65,7 @@ const currentPage = ref(1)
 const perPage = ref(10)
 const lastPage = ref(1)
 const sorting = ref<SortingState>([{ id: 'createdAt', desc: true }])
+const isOpen = ref<boolean>(false)
 
 const columns: ColumnDef<IpAddress>[] = [
   {
@@ -110,6 +125,10 @@ async function loadIpAddresses() {
   } finally {
     isLoading.value = false
   }
+}
+
+function handleOpenModal() {
+  isOpen.value = true
 }
 
 const { handlePaginationChange, handleSortingChange } = useServerTableControls({
