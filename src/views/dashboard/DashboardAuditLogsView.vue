@@ -43,6 +43,8 @@ import type { PaginatedResponse } from '@/types/Response/PaginatedResponse'
 import Spinner from '@/components/shared/Spinner.vue'
 import { formatDate } from '@/lib/utils'
 import { useServerTableControls } from '@/composables/useServerTableControls'
+import { useAuthStore } from '@/stores/auth'
+import { Role } from '@/types/Enums/Role'
 
 const auditLogs = ref<AuditLog[]>([])
 const isLoading = ref(true)
@@ -51,6 +53,7 @@ const currentPage = ref(1)
 const perPage = ref(10)
 const lastPage = ref(1)
 const sorting = ref<SortingState>([{ id: 'createdAt', desc: true }])
+const authStore = useAuthStore()
 
 const columns: ColumnDef<AuditLog>[] = [
   {
@@ -94,7 +97,8 @@ async function loadAuditLogs() {
   const activeSort = sorting.value[0]
 
   try {
-    const { data: response } = await api.get<PaginatedResponse<AuditLog>>('/v1/audit-logs', {
+    const auditEndpoint = authStore.user?.role === Role.Admin ? 'audit-logs' : 'my-audit-logs'
+    const { data: response } = await api.get<PaginatedResponse<AuditLog>>(`/v1/${auditEndpoint}`, {
       params: {
         page: currentPage.value,
         perPage: perPage.value,

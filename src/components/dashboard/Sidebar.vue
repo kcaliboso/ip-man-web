@@ -20,7 +20,7 @@
 
     <nav class="flex flex-col gap-1 p-2">
       <RouterLink
-        v-for="item in navItems"
+        v-for="item in roleNavItem"
         :key="item.name"
         :to="{ name: item.name }"
         custom
@@ -54,26 +54,25 @@
 
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
-import {
-  XMarkIcon,
-  Squares2X2Icon,
-  ClipboardDocumentListIcon,
-  DocumentDuplicateIcon,
-} from '@heroicons/vue/24/solid'
+import { XMarkIcon } from '@heroicons/vue/24/solid'
+
 import { RouterLink } from 'vue-router'
 import Button from '../ui/Button.vue'
+import { useAuthStore } from '@/stores/auth'
+import { computed } from 'vue'
+import { Role } from '@/types/Enums/Role'
+import { adminNavs, clientNavs } from '@/lib/navItem'
 
 const emit = defineEmits(['closeSidebar'])
+const authStore = useAuthStore()
 
 defineProps<{
   open: boolean
 }>()
 
-const navItems = [
-  { name: 'dashboard', label: 'Dashboard', icon: Squares2X2Icon },
-  { name: 'audit-logs', label: 'Audit Logs', icon: ClipboardDocumentListIcon },
-  { name: 'ip-addresses', label: 'IP Addresses', icon: DocumentDuplicateIcon },
-]
+const roleNavItem = computed(() => {
+  return authStore.user?.role === Role.Admin ? adminNavs : clientNavs
+})
 
 const handleNavClick = () => {
   if (window.matchMedia('(max-width: 1023px)').matches) {

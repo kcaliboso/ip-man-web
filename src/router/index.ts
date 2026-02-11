@@ -54,6 +54,11 @@ const router = createRouter({
           component: () => import('../views/dashboard/DashboardAuditLogsView.vue'),
         },
         {
+          path: 'dashboard/my-audit-logs',
+          name: 'my-audit-logs',
+          component: () => import('../views/dashboard/DashboardAuditLogsView.vue'),
+        },
+        {
           path: 'dashboard/ip-addresses',
           name: 'ip-addresses',
           component: () => import('../views/dashboard/DashboardIpsView.vue'),

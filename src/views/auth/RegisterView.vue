@@ -69,7 +69,7 @@ import type { AuthResponse } from '@/types/Response/AuthResponse'
 const registerSchema = z
   .object({
     fullName: z.string().trim().min(2, 'Full name must be at least 2 characters.'),
-    email: z.string().trim().email('Please enter a valid email address.'),
+    email: z.email({ error: 'Please enter valid emaild' }),
     password: z.string().min(8, 'Password must be at least 8 characters.'),
     passwordConfirmation: z.string().min(1, 'Password confirmation is required.'),
   })
