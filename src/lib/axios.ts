@@ -55,7 +55,7 @@ async function refreshAccessToken() {
 
       authStore.setSession({
         token: nextAccessToken,
-        refreshToken: response.data.access_token || authStore.refreshToken,
+        refreshToken: response.data.refresh_token || authStore.refreshToken,
         user: response.data.user ?? authStore.user,
       })
 
