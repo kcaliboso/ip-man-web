@@ -5,8 +5,8 @@
     <div
       class="min-h-0 flex-1 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
     >
-      <div v-if="isLoading" class="p-4 text-sm text-slate-500 dark:text-slate-300">
-        Loading audit logs...
+      <div v-if="isLoading" class="flex items-center justify-center h-full">
+        <Spinner />
       </div>
       <div v-else-if="errorMessage" class="p-4 text-sm text-red-600 dark:text-red-400">
         {{ errorMessage }}
@@ -37,6 +37,7 @@ import DataTable from '@/components/ui/DataTable.vue'
 import api from '@/lib/axios'
 import type { AuditLog } from '@/types/AuditLog'
 import type { PaginatedResponse } from '@/types/Response/PaginatedResponse'
+import Spinner from '@/components/shared/Spinner.vue'
 
 const auditLogs = ref<AuditLog[]>([])
 const isLoading = ref(true)

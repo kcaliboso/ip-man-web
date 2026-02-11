@@ -33,7 +33,8 @@
     >
       <h3 class="mb-3 text-lg font-semibold">Recently Added IP Addresses</h3>
       <ul class="space-y-2">
-        <p v-if="!recentActivity.length">No IP Address added</p>
+        <Spinner v-if="isLoading" />
+        <p v-else-if="!isLoading && !recentActivity.length">No IP Address added</p>
         <li
           v-else
           v-for="item in recentActivity"
@@ -53,16 +54,19 @@ import { defineAsyncComponent, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import type { IpAddress } from '@/types/IpAddress'
 import DashboardSection from '@/components/sections/DashboardSection.vue'
+import Spinner from '@/components/shared/Spinner.vue'
 
 const DashboardMetrics = defineAsyncComponent(
   () => import('@/components/dashboard/DashboardMetrics.vue'),
 )
 
 const recentActivity = ref<IpAddress[]>([])
+const isLoading = ref<boolean>(true)
 
 const authStore = useAuthStore()
 
 function handleSetIp(data: IpAddress[]) {
   recentActivity.value = data
+  isLoading.value = false
 }
 </script>
