@@ -1,5 +1,6 @@
 <template>
   <DashboardSection>
+    <ViewAuditLogWrapper v-model="isViewOpen" :audit-log="selectedAuditLog" />
     <div class="relative z-20 w-full flex justify-between items-center cursor">
       <h1 class="text-2xl font-semibold">Audit logs</h1>
       <div class="flex items-center gap-3">
@@ -40,6 +41,8 @@
         :page-index="currentPage - 1"
         :page-size="perPage"
         :page-count="lastPage"
+        :clickable="true"
+        @row-click="handleRowClick"
         @pagination-change="handlePaginationChange"
         @sorting-change="handleSortingChange"
       />
@@ -64,6 +67,7 @@ import { Role } from '@/types/Enums/Role'
 import { AuditEvent, AuditEventLabels } from '@/types/Enums/AuditEvent'
 import MultiSelect, { type SelectOption } from '@/components/ui/MultiSelect.vue'
 import Button from '@/components/ui/Button.vue'
+import ViewAuditLogWrapper from '@/components/wrappers/ViewAuditLogWrapper.vue'
 
 const auditLogs = ref<AuditLog[]>([])
 const isLoading = ref(true)
@@ -74,6 +78,9 @@ const lastPage = ref(1)
 const sorting = ref<SortingState>([{ id: 'createdAt', desc: true }])
 const authStore = useAuthStore()
 const selectedEvents = ref<SelectOption[]>([])
+const isViewOpen = ref<boolean>(false)
+const selectedAuditLog = ref<AuditLog | null>(null)
+
 const events = ref<SelectOption[]>(
   Object.values(AuditEvent).map((value) => ({
     label: AuditEventLabels[value],
@@ -159,6 +166,12 @@ function handleFilterClear() {
 function handleFilter() {
   currentPage.value = 1
   loadAuditLogs()
+}
+
+function handleRowClick(auditLog: AuditLog) {
+  console.log(auditLog)
+  selectedAuditLog.value = auditLog
+  isViewOpen.value = true
 }
 
 const { handlePaginationChange, handleSortingChange } = useServerTableControls({

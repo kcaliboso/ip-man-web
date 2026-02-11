@@ -210,11 +210,6 @@ function handleIpCreated() {
   loadIpAddresses()
 }
 
-function handleViewIp(ipAddress: IpAddress) {
-  selectedIpAddress.value = ipAddress
-  isViewOpen.value = true
-}
-
 function handleEditIp(ipAddress: IpAddress) {
   if (!canUserEditIp(ipAddress)) {
     return
@@ -234,7 +229,8 @@ function handleDeleteIp(ipAddress: IpAddress) {
 }
 
 function handleRowClick(ipAddress: IpAddress) {
-  handleViewIp(ipAddress)
+  selectedIpAddress.value = ipAddress
+  isViewOpen.value = true
 }
 
 function handleEditFromView(ipAddress: IpAddress) {
