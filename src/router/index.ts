@@ -53,6 +53,11 @@ const router = createRouter({
           name: 'audit-logs',
           component: () => import('../views/dashboard/DashboardAuditLogsView.vue'),
         },
+        {
+          path: 'dashboard/ip-addresses',
+          name: 'ip-addresses',
+          component: () => import('../views/dashboard/DashboardIpsView.vue'),
+        },
       ],
     },
     {

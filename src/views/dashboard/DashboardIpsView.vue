@@ -1,6 +1,6 @@
 <template>
   <DashboardSection>
-    <h1 class="text-2xl font-semibold">Audit logs</h1>
+    <h1 class="text-2xl font-semibold">IP Addresses</h1>
 
     <div
       class="min-h-0 flex-1 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
@@ -11,12 +11,12 @@
       <div v-else-if="errorMessage" class="p-4 text-sm text-red-600 dark:text-red-400">
         {{ errorMessage }}
       </div>
-      <div v-else-if="!auditLogs.length" class="p-4 text-sm text-slate-500 dark:text-slate-300">
+      <div v-else-if="!ipAddresses.length" class="p-4 text-sm text-slate-500 dark:text-slate-300">
         No audit logs found.
       </div>
       <DataTable
         v-else
-        :data="auditLogs"
+        :data="ipAddresses"
         :columns="columns"
         :manual-pagination="true"
         :manual-sorting="true"
@@ -32,19 +32,19 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { AxiosError } from 'axios'
-import type { ColumnDef, SortingState } from '@tanstack/vue-table'
 import DashboardSection from '@/components/sections/DashboardSection.vue'
-import DataTable from '@/components/ui/DataTable.vue'
-import api from '@/lib/axios'
-import type { AuditLog } from '@/types/AuditLog'
-import type { PaginatedResponse } from '@/types/Response/PaginatedResponse'
-import Spinner from '@/components/shared/Spinner.vue'
-import { formatDate } from '@/lib/utils'
 import { useServerTableControls } from '@/composables/useServerTableControls'
+import api from '@/lib/axios'
+import { formatDate } from '@/lib/utils'
+import type { IpAddress } from '@/types/IpAddress'
+import type { PaginatedResponse } from '@/types/Response/PaginatedResponse'
+import type { ColumnDef, SortingState } from '@tanstack/vue-table'
+import { AxiosError } from 'axios'
+import { onMounted, ref } from 'vue'
+import DataTable from '@/components/ui/DataTable.vue'
+import Spinner from '@/components/shared/Spinner.vue'
 
-const auditLogs = ref<AuditLog[]>([])
+const ipAddresses = ref<IpAddress[]>([])
 const isLoading = ref(true)
 const errorMessage = ref('')
 const currentPage = ref(1)
@@ -52,7 +52,7 @@ const perPage = ref(10)
 const lastPage = ref(1)
 const sorting = ref<SortingState>([{ id: 'createdAt', desc: true }])
 
-const columns: ColumnDef<AuditLog>[] = [
+const columns: ColumnDef<IpAddress>[] = [
   {
     accessorKey: 'createdAt',
     header: 'Date',
@@ -61,40 +61,34 @@ const columns: ColumnDef<AuditLog>[] = [
     cell: (info) => formatDate(info.getValue() as string | undefined),
   },
   {
-    accessorKey: 'event',
-    header: 'Event',
+    accessorKey: 'ip',
+    header: 'IP Address',
     enableSorting: true,
     sortingFn: 'alphanumeric',
     cell: (info) => (info.getValue() as string | undefined) ?? '-',
   },
   {
+    accessorKey: 'label',
+    header: 'Label',
+    enableSorting: false,
+    cell: (info) => (info.getValue() as string | undefined) ?? '-',
+  },
+  {
     id: 'user',
-    header: 'User',
-    accessorFn: (row) => row.user?.name ?? '-',
-    enableSorting: false,
-    cell: (info) => (info.getValue() as string | undefined) ?? '-',
-  },
-  {
-    accessorKey: 'ipAddress',
-    header: 'IP',
-    enableSorting: false,
-    cell: (info) => (info.getValue() as string | undefined) ?? '-',
-  },
-  {
-    accessorKey: 'message',
-    header: 'Action',
+    header: 'Created By',
+    accessorFn: (row) => row.createdBy?.name ?? '-',
     enableSorting: false,
     cell: (info) => (info.getValue() as string | undefined) ?? '-',
   },
 ]
 
-async function loadAuditLogs() {
+async function loadIpAddresses() {
   isLoading.value = true
   errorMessage.value = ''
   const activeSort = sorting.value[0]
 
   try {
-    const { data: response } = await api.get<PaginatedResponse<AuditLog>>('/v1/audit-logs', {
+    const { data: response } = await api.get<PaginatedResponse<IpAddress>>('/v1/ip-addresses', {
       params: {
         page: currentPage.value,
         perPage: perPage.value,
@@ -102,16 +96,16 @@ async function loadAuditLogs() {
         sortDirection: activeSort ? (activeSort.desc ? 'desc' : 'asc') : undefined,
       },
     })
-    auditLogs.value = response.data
+    ipAddresses.value = response.data
     currentPage.value = response.meta.current_page
     perPage.value = response.meta.per_page
     lastPage.value = response.meta.last_page
   } catch (error) {
     if (error instanceof AxiosError) {
       const payload = error.response?.data as { message?: string; error?: string } | undefined
-      errorMessage.value = payload?.message ?? payload?.error ?? 'Failed to fetch audit logs.'
+      errorMessage.value = payload?.message ?? payload?.error ?? 'Failed to fetch IP addresses.'
     } else {
-      errorMessage.value = 'Failed to fetch audit logs.'
+      errorMessage.value = 'Failed to fetch IP addresses.'
     }
   } finally {
     isLoading.value = false
@@ -122,8 +116,8 @@ const { handlePaginationChange, handleSortingChange } = useServerTableControls({
   currentPage,
   perPage,
   sorting,
-  onChange: loadAuditLogs,
+  onChange: loadIpAddresses,
 })
 
-onMounted(loadAuditLogs)
+onMounted(loadIpAddresses)
 </script>

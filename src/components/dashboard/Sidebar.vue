@@ -54,7 +54,12 @@
 
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
-import { XMarkIcon, Squares2X2Icon, ClipboardDocumentListIcon } from '@heroicons/vue/24/solid'
+import {
+  XMarkIcon,
+  Squares2X2Icon,
+  ClipboardDocumentListIcon,
+  DocumentDuplicateIcon,
+} from '@heroicons/vue/24/solid'
 import { RouterLink } from 'vue-router'
 import Button from '../ui/Button.vue'
 
@@ -67,6 +72,7 @@ defineProps<{
 const navItems = [
   { name: 'dashboard', label: 'Dashboard', icon: Squares2X2Icon },
   { name: 'audit-logs', label: 'Audit Logs', icon: ClipboardDocumentListIcon },
+  { name: 'ip-addresses', label: 'IP Addresses', icon: DocumentDuplicateIcon },
 ]
 
 const handleNavClick = () => {
