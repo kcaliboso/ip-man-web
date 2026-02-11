@@ -1,8 +1,6 @@
 <template>
   <DashboardSection>
-    <Modal v-model="isOpen" title="Create IP Address">
-      <h1>hey there</h1>
-    </Modal>
+    <CreateIpWrapper v-model="isOpen" @created="handleIpCreated" />
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-semibold">IP Addresses</h1>
       <div>
@@ -56,7 +54,7 @@ import DataTable from '@/components/ui/DataTable.vue'
 import Spinner from '@/components/shared/Spinner.vue'
 import Button from '@/components/ui/Button.vue'
 import { PlusIcon } from '@heroicons/vue/24/solid'
-import Modal from '@/components/shared/Modal.vue'
+import CreateIpWrapper from '@/components/wrappers/CreateIpWrapper.vue'
 
 const ipAddresses = ref<IpAddress[]>([])
 const isLoading = ref(true)
@@ -129,6 +127,11 @@ async function loadIpAddresses() {
 
 function handleOpenModal() {
   isOpen.value = true
+}
+
+function handleIpCreated() {
+  currentPage.value = 1
+  loadIpAddresses()
 }
 
 const { handlePaginationChange, handleSortingChange } = useServerTableControls({
