@@ -15,7 +15,10 @@
         required
       />
 
-      <Button type="submit"> Send Reset Link </Button>
+      <Button type="submit">
+        <p v-if="isSubmitting">Sending...</p>
+        <p v-else>Send Reset Link</p>
+      </Button>
     </form>
 
     <RouterLink class="mt-6 text-sm underline" :to="{ name: 'login' }">Back to login</RouterLink>
@@ -25,21 +28,24 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import Input from '@/components/ui/Input.vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
 import { z } from 'zod'
+import api from '@/lib/axios'
+import { toast } from 'vue-sonner'
+import { getServerErrorMessage } from '@/lib/authHelpers'
 
 const forgotPasswordSchema = z.object({
-  email: z.string().trim().email('Please enter a valid email address.'),
+  email: z.email({ error: 'Please enter a valid email address.' }),
 })
 
 const email = ref('')
 const errors = ref<{ email?: string }>({})
+const isSubmitting = ref(false)
 
-const router = useRouter()
-
-const handleReset = () => {
+const handleReset = async () => {
   errors.value = {}
+  isSubmitting.value = true
 
   const result = forgotPasswordSchema.safeParse({ email: email.value })
 
@@ -48,9 +54,20 @@ const handleReset = () => {
     errors.value = {
       email: fieldErrors.properties?.email?.errors?.[0],
     }
+    isSubmitting.value = false
     return
   }
 
-  console.log(result)
+  try {
+    await api.post('/auth/forgot-password', {
+      email: result.data.email,
+    })
+
+    toast.success('If the email exists, a reset link has been sent.')
+  } catch (error) {
+    toast.error(getServerErrorMessage(error))
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
