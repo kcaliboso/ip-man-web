@@ -11,5 +11,4 @@ export type User = {
   createdAt: string
   updated_at: string
   ownedIps: IpAddress[]
-  auditLogs: AuditLog[]
 } | null

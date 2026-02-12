@@ -124,8 +124,7 @@ async function loadAuditLogs() {
   const activeSort = sorting.value[0]
 
   try {
-    const auditEndpoint = authStore.user?.role === Role.Admin ? 'audit-logs' : 'my-audit-logs'
-    const { data: response } = await api.get<PaginatedResponse<AuditLog>>(`/v1/${auditEndpoint}`, {
+    const { data: response } = await api.get<PaginatedResponse<AuditLog>>('/v1/audit-logs', {
       params: {
         page: currentPage.value,
         perPage: perPage.value,

@@ -72,6 +72,8 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const userRole = computed(() => user.value?.role)
+
   return {
     session,
     user,
@@ -80,6 +82,7 @@ export const useAuthStore = defineStore('auth', () => {
     isTokenValid,
     canRefresh,
     isAuthenticated,
+    userRole,
     setSession,
     setUser,
     setToken,

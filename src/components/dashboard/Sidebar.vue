@@ -61,7 +61,7 @@ import Button from '../ui/Button.vue'
 import { useAuthStore } from '@/stores/auth'
 import { computed } from 'vue'
 import { Role } from '@/types/Enums/Role'
-import { adminNavs, clientNavs } from '@/lib/navItem'
+import { navs } from '@/lib/navItem'
 
 const emit = defineEmits(['closeSidebar'])
 const authStore = useAuthStore()
@@ -71,7 +71,10 @@ defineProps<{
 }>()
 
 const roleNavItem = computed(() => {
-  return authStore.user?.role === Role.Admin ? adminNavs : clientNavs
+  if (authStore.userRole !== Role.Admin) {
+    return navs.filter((nav) => nav.name !== 'audit-logs')
+  }
+  return navs
 })
 
 const handleNavClick = () => {
